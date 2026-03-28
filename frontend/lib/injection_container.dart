@@ -47,7 +47,23 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<AppDatabase>(database);
 
   // --- Dio (REST) ---
-  sl.registerSingleton<Dio>(Dio());
+  final dio = Dio();
+  // On web, NewsAPI blocks browser requests (CORS).  We route every
+  // outgoing request through a lightweight proxy so the app works.
+  if (kIsWeb) {
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final original = options.uri.toString();
+          options.path = 'https://corsproxy.io/?${Uri.encodeComponent(original)}';
+          options.baseUrl = '';
+          options.queryParameters = {};
+          handler.next(options);
+        },
+      ),
+    );
+  }
+  sl.registerSingleton<Dio>(dio);
 
   // --- Firebase ---
   sl.registerSingleton<FirebaseFirestore>(FirebaseFirestore.instance);

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_app_clean_architecture/config/theme/app_themes.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/domain/use_cases/params/publish_article_params.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/presentation/bloc/article_publisher_bloc.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/presentation/bloc/article_publisher_event.dart';
@@ -17,10 +18,7 @@ class CreateArticleScreen extends StatefulWidget {
 }
 
 class _CreateArticleScreenState extends State<CreateArticleScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
-  final _subtitleController = TextEditingController();
-  final _authorController = TextEditingController();
   final _contentController = TextEditingController();
   Uint8List? _thumbnailBytes;
   String? _thumbnailFileName;
@@ -28,8 +26,6 @@ class _CreateArticleScreenState extends State<CreateArticleScreen> {
   @override
   void dispose() {
     _titleController.dispose();
-    _subtitleController.dispose();
-    _authorController.dispose();
     _contentController.dispose();
     super.dispose();
   }
@@ -49,103 +45,152 @@ class _CreateArticleScreenState extends State<CreateArticleScreen> {
 
   AppBar _buildAppBar() {
     return AppBar(
-      title: const Text('New Article'),
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios),
+        icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
         onPressed: () => Navigator.pop(context),
       ),
+      title: const Text(
+        'Create Article',
+        style: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.w600,
+          fontSize: 18,
+        ),
+      ),
+      centerTitle: true,
+      backgroundColor: Colors.white,
+      elevation: 0,
     );
   }
 
   Widget _buildBody(ArticlePublisherState state) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // --- Title Input ---
+          _buildTitleInput(),
+          const SizedBox(height: 24),
+
+          // --- Attach Image Button / Image Preview ---
+          _buildAttachImageSection(),
+          const SizedBox(height: 24),
+
+          // --- Content Input ---
+          _buildContentInput(),
+          const SizedBox(height: 40),
+
+          // --- Publish Button ---
+          _buildPublishButton(state),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTitleInput() {
+    return TextField(
+      controller: _titleController,
+      style: const TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.bold,
+        color: Colors.black,
+      ),
+      maxLines: 2,
+      decoration: const InputDecoration(
+        hintText: 'Write your title here...',
+        hintStyle: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFFBDBDBD),
+        ),
+        border: InputBorder.none,
+        contentPadding: EdgeInsets.zero,
+      ),
+    );
+  }
+
+  Widget _buildAttachImageSection() {
+    if (_thumbnailBytes != null) {
+      return _buildImagePreview();
+    }
+    return _buildAttachImageButton();
+  }
+
+  Widget _buildAttachImageButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton.icon(
+        onPressed: _pickThumbnail,
+        icon: const Icon(Icons.camera_alt_outlined, color: Colors.white),
+        label: const Text(
+          'Attach Image',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: kSymmetryPurple,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 0,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImagePreview() {
+    return GestureDetector(
+      onTap: _pickThumbnail,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
           children: [
-            ThumbnailPickerWidget(
-              selectedImageBytes: _thumbnailBytes,
-              onTap: _pickThumbnail,
+            Image.memory(
+              _thumbnailBytes!,
+              width: double.infinity,
+              height: 200,
+              fit: BoxFit.cover,
             ),
-            if (_thumbnailBytes == null)
-              const Padding(
-                padding: EdgeInsets.only(top: 6),
-                child: Text(
-                  'Thumbnail is required',
-                  style: TextStyle(color: Colors.transparent, fontSize: 12),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.white, size: 20),
+                  onPressed: _pickThumbnail,
                 ),
               ),
-            const SizedBox(height: 24),
-            _buildTextField(
-              controller: _titleController,
-              label: 'Title',
-              hint: 'Enter article title',
-              maxLines: 2,
             ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _subtitleController,
-              label: 'Subtitle',
-              hint: 'Enter article subtitle',
-              maxLines: 2,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _authorController,
-              label: 'Author',
-              hint: 'Enter your name',
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _contentController,
-              label: 'Content',
-              hint: 'Write your article here...',
-              maxLines: 10,
-            ),
-            const SizedBox(height: 32),
-            _buildPublishButton(state),
-            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    int maxLines = 1,
-  }) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        hintStyle: const TextStyle(color: Color(0xFFBDBDBD)),
-        labelStyle: const TextStyle(color: Color(0xFF8B8B8B)),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFE0E0E0)),
-        ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.black),
-        ),
-        errorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.red),
-        ),
-        focusedErrorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.red),
+  Widget _buildContentInput() {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 200),
+      child: TextField(
+        controller: _contentController,
+        style: const TextStyle(fontSize: 16, color: Colors.black87, height: 1.5),
+        maxLines: null,
+        minLines: 8,
+        decoration: const InputDecoration(
+          hintText: 'Add article here, .....',
+          hintStyle: TextStyle(
+            fontSize: 16,
+            color: Color(0xFFBDBDBD),
+          ),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.zero,
         ),
       ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return '$label is required';
-        }
-        return null;
-      },
     );
   }
 
@@ -154,20 +199,33 @@ class _CreateArticleScreenState extends State<CreateArticleScreen> {
 
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: 56,
       child: ElevatedButton(
         onPressed: isLoading ? null : _onPublishTapped,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.black,
-          disabledBackgroundColor: const Color(0xFF8B8B8B),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          backgroundColor: kSymmetryPurple,
+          disabledBackgroundColor: kSymmetryPurple.withOpacity(0.6),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0,
         ),
         child: isLoading
             ? const CupertinoActivityIndicator(color: Colors.white)
-            : const Text(
-                'Publish Article',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+            : const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Publish Article',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward, color: Colors.white),
+                ],
               ),
       ),
     );
@@ -205,28 +263,46 @@ class _CreateArticleScreenState extends State<CreateArticleScreen> {
   }
 
   void _onPublishTapped() {
-    final isThumbnailMissing = _thumbnailBytes == null;
-    final isFormValid = _formKey.currentState?.validate() ?? false;
+    final title = _titleController.text.trim();
+    final content = _contentController.text.trim();
 
-    if (isThumbnailMissing) {
+    if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select a thumbnail image'),
+          content: Text('Please enter a title'),
           backgroundColor: Colors.orange,
         ),
       );
       return;
     }
 
-    if (!isFormValid) return;
+    if (_thumbnailBytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please attach a thumbnail image'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    if (content.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please write your article content'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
     context.read<ArticlePublisherBloc>().add(
           PublishArticleEvent(
             PublishArticleParams(
-              title: _titleController.text.trim(),
-              subtitle: _subtitleController.text.trim(),
-              content: _contentController.text.trim(),
-              author: _authorController.text.trim(),
+              title: title,
+              subtitle: '',
+              content: content,
+              author: 'Journalist',
               thumbnailBytes: _thumbnailBytes!,
               thumbnailFileName: _thumbnailFileName!,
             ),

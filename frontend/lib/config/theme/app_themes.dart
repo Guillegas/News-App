@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 
+/// Symmetry brand purple used across the app (FAB, buttons, accents).
+const Color kSymmetryPurple = Color(0xFF6C63FF);
+
 ThemeData theme() {
   return ThemeData(
     scaffoldBackgroundColor: Colors.white,
     fontFamily: 'Muli',
-    appBarTheme: appBarTheme()
+    appBarTheme: appBarTheme(),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: kSymmetryPurple,
+      foregroundColor: Colors.white,
+    ),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: kSymmetryPurple,
+      primary: kSymmetryPurple,
+    ),
   );
 }
 

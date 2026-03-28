@@ -25,7 +25,7 @@ class ArticleWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsetsDirectional.only(
             start: 14, end: 14, bottom: 7, top: 7),
-        height: MediaQuery.of(context).size.width / 2.2,
+        height: (MediaQuery.of(context).size.width / 2.2).clamp(0, 180),
         child: Row(
           children: [
             _buildImage(context),
@@ -45,7 +45,7 @@ class ArticleWidget extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20.0),
                 child: Container(
-                  width: MediaQuery.of(context).size.width / 3,
+                  width: (MediaQuery.of(context).size.width / 3).clamp(0, 140),
                   height: double.maxFinite,
                   decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.08),
@@ -59,7 +59,7 @@ class ArticleWidget extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20.0),
                 child: Container(
-                  width: MediaQuery.of(context).size.width / 3,
+                  width: (MediaQuery.of(context).size.width / 3).clamp(0, 140),
                   height: double.maxFinite,
                   child: CupertinoActivityIndicator(),
                   decoration: BoxDecoration(
@@ -73,7 +73,7 @@ class ArticleWidget extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20.0),
                 child: Container(
-                  width: MediaQuery.of(context).size.width / 3,
+                  width: (MediaQuery.of(context).size.width / 3).clamp(0, 140),
                   height: double.maxFinite,
                   child: Icon(Icons.error),
                   decoration: BoxDecoration(

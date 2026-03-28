@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:news_app_clean_architecture/core/constants/constants.dart';
 import 'package:news_app_clean_architecture/features/daily_news/data/data_sources/local/app_database.dart';
@@ -24,7 +22,7 @@ class ArticleRepositoryImpl implements ArticleRepository {
       category:categoryQuery,
     );
 
-    if (httpResponse.response.statusCode == HttpStatus.ok) {
+    if (httpResponse.response.statusCode == 200) {
       return DataSuccess(httpResponse.data);
     } else {
       return DataFailed(
