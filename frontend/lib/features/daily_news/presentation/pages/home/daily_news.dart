@@ -39,12 +39,20 @@ class DailyNews extends StatelessWidget {
         if (state is RemoteArticlesLoading) {
           return Scaffold(
               appBar: _buildAppbar(context),
-              body: const Center(child: CupertinoActivityIndicator()));
+              body: const Center(child: CupertinoActivityIndicator()),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () => Navigator.pushNamed(context, '/CreateArticle'),
+                child: const Icon(Icons.add),
+              ));
         }
         if (state is RemoteArticlesError) {
           return Scaffold(
               appBar: _buildAppbar(context),
-              body: const Center(child: Icon(Icons.refresh)));
+              body: const Center(child: Icon(Icons.refresh)),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () => Navigator.pushNamed(context, '/CreateArticle'),
+                child: const Icon(Icons.add),
+              ));
         }
         if (state is RemoteArticlesDone) {
           return _buildArticlesPage(context, state.articles!);
@@ -70,9 +78,7 @@ class DailyNews extends StatelessWidget {
         children: articleWidgets,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: REPLACE ROUTE WITH YOUR "ADD ARTICLE" PAGE
-        },
+        onPressed: () => Navigator.pushNamed(context, '/CreateArticle'),
         child: const Icon(Icons.add),
       ),
     );

@@ -1,5 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:news_app_clean_architecture/features/article_publisher/data/data_sources/remote/article_publisher_data_source.dart';
+import 'package:news_app_clean_architecture/features/article_publisher/data/data_sources/remote/article_publisher_data_source_impl.dart';
+import 'package:news_app_clean_architecture/features/article_publisher/data/repository/article_publisher_repository_impl.dart';
+import 'package:news_app_clean_architecture/features/article_publisher/domain/repository/article_publisher_repository.dart';
+import 'package:news_app_clean_architecture/features/article_publisher/domain/use_cases/get_published_articles_usecase.dart';
+import 'package:news_app_clean_architecture/features/article_publisher/domain/use_cases/publish_article_usecase.dart';
+import 'package:news_app_clean_architecture/features/article_publisher/presentation/bloc/article_publisher_bloc.dart';
 import 'package:news_app_clean_architecture/features/daily_news/data/data_sources/remote/news_api_service.dart';
 import 'package:news_app_clean_architecture/features/daily_news/data/repository/article_repository_impl.dart';
 import 'package:news_app_clean_architecture/features/daily_news/domain/repository/article_repository.dart';
@@ -11,49 +20,84 @@ import 'features/daily_news/domain/usecases/remove_article.dart';
 import 'features/daily_news/domain/usecases/save_article.dart';
 import 'features/daily_news/presentation/bloc/article/local/local_article_bloc.dart';
 
+import 'package:flutter/foundation.dart';
+import 'package:news_app_clean_architecture/features/daily_news/data/data_sources/local/DAO/article_dao.dart';
+import 'package:news_app_clean_architecture/features/daily_news/data/models/article.dart';
+
 final sl = GetIt.instance;
 
 Future<void> initializeDependencies() async {
-
-  final database = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
+  // --- Local Database ---
+  // On native platforms, Floor uses sqflite with a persistent file.
+  // On web, Floor/sqflite is not fully supported so we catch any errors
+  // and build an in-memory database as a best-effort fallback.
+  AppDatabase database;
+  if (kIsWeb) {
+    try {
+      database = await $FloorAppDatabase.inMemoryDatabaseBuilder().build();
+    } catch (_) {
+      // sqflite web factories may fail; the saved-articles feature
+      // degrades gracefully while the rest of the app keeps working.
+      database = _NoOpAppDatabase();
+    }
+  } else {
+    database =
+        await $FloorAppDatabase.databaseBuilder('app_database.db').build();
+  }
   sl.registerSingleton<AppDatabase>(database);
-  
-  // Dio
+
+  // --- Dio (REST) ---
   sl.registerSingleton<Dio>(Dio());
 
-  // Dependencies
+  // --- Firebase ---
+  sl.registerSingleton<FirebaseFirestore>(FirebaseFirestore.instance);
+  sl.registerSingleton<FirebaseStorage>(FirebaseStorage.instance);
+
+  // --- Data Sources ---
   sl.registerSingleton<NewsApiService>(NewsApiService(sl()));
+  sl.registerSingleton<ArticlePublisherDataSource>(
+    ArticlePublisherDataSourceImpl(sl(), sl()),
+  );
 
+  // --- Repositories ---
   sl.registerSingleton<ArticleRepository>(
-    ArticleRepositoryImpl(sl(),sl())
+    ArticleRepositoryImpl(sl(), sl()),
   );
-  
-  //UseCases
-  sl.registerSingleton<GetArticleUseCase>(
-    GetArticleUseCase(sl())
+  sl.registerSingleton<ArticlePublisherRepository>(
+    ArticlePublisherRepositoryImpl(sl()),
   );
 
-  sl.registerSingleton<GetSavedArticleUseCase>(
-    GetSavedArticleUseCase(sl())
-  );
+  // --- Use Cases (daily_news) ---
+  sl.registerSingleton<GetArticleUseCase>(GetArticleUseCase(sl()));
+  sl.registerSingleton<GetSavedArticleUseCase>(GetSavedArticleUseCase(sl()));
+  sl.registerSingleton<SaveArticleUseCase>(SaveArticleUseCase(sl()));
+  sl.registerSingleton<RemoveArticleUseCase>(RemoveArticleUseCase(sl()));
 
-  sl.registerSingleton<SaveArticleUseCase>(
-    SaveArticleUseCase(sl())
-  );
-  
-  sl.registerSingleton<RemoveArticleUseCase>(
-    RemoveArticleUseCase(sl())
-  );
+  // --- Use Cases (article_publisher) ---
+  sl.registerSingleton<PublishArticleUseCase>(PublishArticleUseCase(sl()));
+  sl.registerSingleton<GetPublishedArticlesUseCase>(
+      GetPublishedArticlesUseCase(sl()));
 
-
-  //Blocs
-  sl.registerFactory<RemoteArticlesBloc>(
-    ()=> RemoteArticlesBloc(sl())
-  );
-
+  // --- Blocs ---
+  sl.registerFactory<RemoteArticlesBloc>(() => RemoteArticlesBloc(sl()));
   sl.registerFactory<LocalArticleBloc>(
-    ()=> LocalArticleBloc(sl(),sl(),sl())
-  );
+      () => LocalArticleBloc(sl(), sl(), sl()));
+  sl.registerFactory<ArticlePublisherBloc>(
+      () => ArticlePublisherBloc(sl()));
+}
 
+/// Minimal no-op fallback so the app can start on web even when sqflite
+/// is unavailable.  The saved-articles feature simply returns empty lists.
+class _NoOpArticleDao extends ArticleDao {
+  @override
+  Future<List<ArticleModel>> getArticles() async => [];
+  @override
+  Future<void> insertArticle(ArticleModel article) async {}
+  @override
+  Future<void> deleteArticle(ArticleModel articleModel) async {}
+}
 
+class _NoOpAppDatabase extends AppDatabase {
+  @override
+  ArticleDao get articleDAO => _NoOpArticleDao();
 }
