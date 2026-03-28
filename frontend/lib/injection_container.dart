@@ -6,8 +6,10 @@ import 'package:news_app_clean_architecture/features/article_publisher/data/data
 import 'package:news_app_clean_architecture/features/article_publisher/data/data_sources/remote/article_publisher_data_source_impl.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/data/repository/article_publisher_repository_impl.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/domain/repository/article_publisher_repository.dart';
+import 'package:news_app_clean_architecture/features/article_publisher/domain/use_cases/delete_article_usecase.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/domain/use_cases/get_published_articles_usecase.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/domain/use_cases/publish_article_usecase.dart';
+import 'package:news_app_clean_architecture/features/article_publisher/domain/use_cases/update_article_usecase.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/presentation/bloc/article_publisher_bloc.dart';
 import 'package:news_app_clean_architecture/features/daily_news/data/data_sources/remote/news_api_service.dart';
 import 'package:news_app_clean_architecture/features/daily_news/data/repository/article_repository_impl.dart';
@@ -93,6 +95,8 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<PublishArticleUseCase>(PublishArticleUseCase(sl()));
   sl.registerSingleton<GetPublishedArticlesUseCase>(
       GetPublishedArticlesUseCase(sl()));
+  sl.registerSingleton<DeleteArticleUseCase>(DeleteArticleUseCase(sl()));
+  sl.registerSingleton<UpdateArticleUseCase>(UpdateArticleUseCase(sl()));
 
   // --- Blocs ---
   sl.registerFactory<RemoteArticlesBloc>(
@@ -100,7 +104,7 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<LocalArticleBloc>(
       () => LocalArticleBloc(sl(), sl(), sl()));
   sl.registerFactory<ArticlePublisherBloc>(
-      () => ArticlePublisherBloc(sl()));
+      () => ArticlePublisherBloc(sl(), sl(), sl()));
 }
 
 /// Minimal no-op fallback so the app can start on web even when sqflite

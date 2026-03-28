@@ -25,6 +25,19 @@ class ArticlePublisherSuccess extends ArticlePublisherState {
   List<Object> get props => [article];
 }
 
+class ArticlePublisherDeleted extends ArticlePublisherState {
+  const ArticlePublisherDeleted();
+}
+
+class ArticlePublisherUpdated extends ArticlePublisherState {
+  final JournalistArticleEntity article;
+
+  const ArticlePublisherUpdated(this.article);
+
+  @override
+  List<Object> get props => [article];
+}
+
 class ArticlePublisherError extends ArticlePublisherState {
   final Exception error;
 

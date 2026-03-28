@@ -8,7 +8,7 @@ abstract class RemoteArticlesState extends Equatable {
   const RemoteArticlesState({this.articles, this.error});
 
   @override
-  List<Object> get props => [articles!, error!];
+  List<Object?> get props => [articles, error];
 }
 
 class RemoteArticlesLoading extends RemoteArticlesState {
@@ -16,7 +16,15 @@ class RemoteArticlesLoading extends RemoteArticlesState {
 }
 
 class RemoteArticlesDone extends RemoteArticlesState {
-  const RemoteArticlesDone(List<ArticleEntity> article) : super(articles: article);
+  /// Unique timestamp so Equatable always considers a refresh as a new state.
+  final int _timestamp;
+
+  RemoteArticlesDone(List<ArticleEntity> article)
+      : _timestamp = DateTime.now().millisecondsSinceEpoch,
+        super(articles: article);
+
+  @override
+  List<Object?> get props => [articles, _timestamp];
 }
 
 class RemoteArticlesError extends RemoteArticlesState {

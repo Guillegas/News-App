@@ -30,4 +30,33 @@ class ArticlePublisherRepositoryImpl implements ArticlePublisherRepository {
       return DataFailed(e);
     }
   }
+
+  @override
+  Future<DataState<void>> deleteArticle(
+      String articleId, String thumbnailStoragePath) async {
+    try {
+      await _dataSource.deleteArticle(articleId, thumbnailStoragePath);
+      return DataSuccess(null);
+    } on Exception catch (e) {
+      return DataFailed(e);
+    }
+  }
+
+  @override
+  Future<DataState<JournalistArticleEntity>> updateArticle(
+    String articleId, {
+    required String title,
+    required String content,
+  }) async {
+    try {
+      final model = await _dataSource.updateArticle(
+        articleId,
+        title: title,
+        content: content,
+      );
+      return DataSuccess(model.toEntity());
+    } on Exception catch (e) {
+      return DataFailed(e);
+    }
+  }
 }

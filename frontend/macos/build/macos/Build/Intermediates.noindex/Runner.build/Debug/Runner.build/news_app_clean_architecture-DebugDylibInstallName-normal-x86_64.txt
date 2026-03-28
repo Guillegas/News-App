@@ -1,0 +1,1 @@
+@rpath/news_app_clean_architecture.debug.dylib

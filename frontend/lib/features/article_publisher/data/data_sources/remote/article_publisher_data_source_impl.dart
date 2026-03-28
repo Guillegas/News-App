@@ -16,15 +16,12 @@ class ArticlePublisherDataSourceImpl implements ArticlePublisherDataSource {
   @override
   Future<JournalistArticleModel> publishArticle(
       PublishArticleParams params) async {
-    // Reserve a document ID before uploading so the storage path
-    // and Firestore ID are always in sync.
     final docRef = _firestore.collection(_articlesCollection).doc();
     final articleId = docRef.id;
 
     final storageRef =
         _storage.ref('$_thumbnailsFolder/$articleId/${params.thumbnailFileName}');
 
-    // putData works on all platforms (web, mobile, desktop).
     await storageRef.putData(
       params.thumbnailBytes,
       SettableMetadata(contentType: 'image/jpeg'),
@@ -41,7 +38,6 @@ class ArticlePublisherDataSourceImpl implements ArticlePublisherDataSource {
       'publishedAt': FieldValue.serverTimestamp(),
     });
 
-    // Re-read to resolve the server timestamp into a concrete Timestamp.
     final snapshot = await docRef.get();
     return _mapSnapshotToModel(snapshot);
   }
@@ -56,9 +52,37 @@ class ArticlePublisherDataSourceImpl implements ArticlePublisherDataSource {
     return querySnapshot.docs.map(_mapSnapshotToModel).toList();
   }
 
-  // Converts a Firestore snapshot to a model using only Dart primitives,
-  // keeping the Firebase Timestamp type contained in the data layer
-  // (violation 1.2.4) and the model free of Firebase imports.
+  @override
+  Future<void> deleteArticle(
+      String articleId, String thumbnailStoragePath) async {
+    // Delete image from Storage
+    try {
+      await _storage.ref(thumbnailStoragePath).delete();
+    } catch (_) {
+      // Image might already be gone — continue with doc deletion
+    }
+
+    // Delete document from Firestore
+    await _firestore.collection(_articlesCollection).doc(articleId).delete();
+  }
+
+  @override
+  Future<JournalistArticleModel> updateArticle(
+    String articleId, {
+    required String title,
+    required String content,
+  }) async {
+    final docRef = _firestore.collection(_articlesCollection).doc(articleId);
+
+    await docRef.update({
+      'title': title,
+      'content': content,
+    });
+
+    final snapshot = await docRef.get();
+    return _mapSnapshotToModel(snapshot);
+  }
+
   JournalistArticleModel _mapSnapshotToModel(
     DocumentSnapshot<Map<String, dynamic>> snapshot,
   ) {

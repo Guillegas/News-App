@@ -6,4 +6,12 @@ abstract class ArticlePublisherRepository {
   Future<DataState<JournalistArticleEntity>> publishArticle(PublishArticleParams params);
 
   Future<DataState<List<JournalistArticleEntity>>> getPublishedArticles();
+
+  Future<DataState<void>> deleteArticle(String articleId, String thumbnailStoragePath);
+
+  Future<DataState<JournalistArticleEntity>> updateArticle(
+    String articleId, {
+    required String title,
+    required String content,
+  });
 }

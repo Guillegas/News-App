@@ -5,4 +5,12 @@ abstract class ArticlePublisherDataSource {
   Future<JournalistArticleModel> publishArticle(PublishArticleParams params);
 
   Future<List<JournalistArticleModel>> getPublishedArticles();
+
+  Future<void> deleteArticle(String articleId, String thumbnailStoragePath);
+
+  Future<JournalistArticleModel> updateArticle(
+    String articleId, {
+    required String title,
+    required String content,
+  });
 }

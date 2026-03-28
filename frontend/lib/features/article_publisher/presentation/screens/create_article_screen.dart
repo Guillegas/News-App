@@ -30,6 +30,12 @@ class _CreateArticleScreenState extends State<CreateArticleScreen> {
     super.dispose();
   }
 
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
+  Color get _textColor => _isDark ? Colors.white : Colors.black;
+  Color get _hintColor => _isDark ? Colors.white38 : const Color(0xFFBDBDBD);
+  Color get _borderColor => _isDark ? Colors.white24 : const Color(0xFFE0E0E0);
+  Color get _inputTextColor => _isDark ? Colors.white : Colors.black;
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ArticlePublisherBloc, ArticlePublisherState>(
@@ -47,10 +53,9 @@ class _CreateArticleScreenState extends State<CreateArticleScreen> {
   AppBar _buildAppBar() {
     return AppBar(
       leading: IconButton(
-        icon: const Icon(Icons.chevron_left, color: Colors.black, size: 30),
+        icon: Icon(Icons.chevron_left, color: _textColor, size: 30),
         onPressed: () => Navigator.pop(context),
       ),
-      backgroundColor: Colors.white,
       elevation: 0,
     );
   }
@@ -83,27 +88,27 @@ class _CreateArticleScreenState extends State<CreateArticleScreen> {
   Widget _buildTitleInput() {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        border: Border.all(color: _borderColor),
         borderRadius: BorderRadius.circular(12),
       ),
       child: TextField(
         controller: _titleController,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w500,
-          color: Colors.black,
+          color: _inputTextColor,
         ),
         maxLines: 3,
         minLines: 2,
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           hintText: 'Write your title here...',
           hintStyle: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w400,
-            color: Color(0xFFBDBDBD),
+            color: _hintColor,
           ),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.all(16),
+          contentPadding: const EdgeInsets.all(16),
         ),
       ),
     );
@@ -120,17 +125,18 @@ class _CreateArticleScreenState extends State<CreateArticleScreen> {
     return Center(
       child: ElevatedButton.icon(
         onPressed: _pickThumbnail,
-        icon: const Icon(Icons.camera_alt_outlined, color: Colors.black87),
-        label: const Text(
+        icon: Icon(Icons.camera_alt_outlined,
+            color: _isDark ? Colors.white : Colors.black87),
+        label: Text(
           'Attach Image',
           style: TextStyle(
-            color: Colors.black87,
+            color: _isDark ? Colors.white : Colors.black87,
             fontSize: 15,
             fontWeight: FontWeight.w500,
           ),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: kSymmetryPurple.withOpacity(0.2),
+          backgroundColor: kSymmetryPurple.withOpacity(_isDark ? 0.35 : 0.2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -177,26 +183,26 @@ class _CreateArticleScreenState extends State<CreateArticleScreen> {
   Widget _buildContentInput() {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        border: Border.all(color: _borderColor),
         borderRadius: BorderRadius.circular(12),
       ),
       child: TextField(
         controller: _contentController,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 16,
-          color: Colors.black87,
+          color: _inputTextColor,
           height: 1.5,
         ),
         maxLines: null,
         minLines: 12,
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           hintText: 'Add article here, .....',
           hintStyle: TextStyle(
             fontSize: 16,
-            color: Color(0xFFBDBDBD),
+            color: _hintColor,
           ),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.all(16),
+          contentPadding: const EdgeInsets.all(16),
         ),
       ),
     );
@@ -213,32 +219,34 @@ class _CreateArticleScreenState extends State<CreateArticleScreen> {
         child: ElevatedButton(
           onPressed: isLoading ? null : _onPublishTapped,
           style: ElevatedButton.styleFrom(
-            backgroundColor: kSymmetryPurple.withOpacity(0.25),
-            disabledBackgroundColor: kSymmetryPurple.withOpacity(0.15),
+            backgroundColor: kSymmetryPurple.withOpacity(_isDark ? 0.5 : 0.25),
+            disabledBackgroundColor:
+                kSymmetryPurple.withOpacity(_isDark ? 0.3 : 0.15),
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.zero,
             ),
             elevation: 0,
           ),
           child: isLoading
-              ? const CupertinoActivityIndicator(color: Colors.black)
-              : const Row(
+              ? CupertinoActivityIndicator(
+                  color: _isDark ? Colors.white : Colors.black)
+              : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.arrow_forward, color: Colors.black, size: 24),
+                    Icon(Icons.arrow_forward, color: _textColor, size: 24),
                     Text(
                       ')',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: _textColor,
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Text(
                       'Publish Article',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: _textColor,
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                       ),

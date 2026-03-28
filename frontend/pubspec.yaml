@@ -50,6 +50,9 @@ dependencies:
   # image picker for thumbnail selection
   image_picker: ^1.2.1
 
+  # native share functionality
+  share_plus: ^10.1.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

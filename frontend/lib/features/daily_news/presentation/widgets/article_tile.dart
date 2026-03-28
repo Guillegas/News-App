@@ -29,7 +29,7 @@ class ArticleWidget extends StatelessWidget {
         child: Row(
           children: [
             _buildImage(context),
-            _buildTitleAndDescription(),
+            _buildTitleAndDescription(context),
             _buildRemovableArea(),
           ],
         ),
@@ -84,7 +84,11 @@ class ArticleWidget extends StatelessWidget {
             ));
   }
 
-  Widget _buildTitleAndDescription() {
+  Widget _buildTitleAndDescription(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? Colors.white : Colors.black87;
+    final subtitleColor = isDark ? Colors.white70 : Colors.black54;
+
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 7),
@@ -97,11 +101,11 @@ class ArticleWidget extends StatelessWidget {
               article!.title ?? '',
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Butler',
                 fontWeight: FontWeight.w900,
                 fontSize: 18,
-                color: Colors.black87,
+                color: titleColor,
               ),
             ),
 
@@ -112,6 +116,7 @@ class ArticleWidget extends StatelessWidget {
                 child: Text(
                   article!.description ?? '',
                   maxLines: 2,
+                  style: TextStyle(color: subtitleColor),
                 ),
               ),
             ),
@@ -119,13 +124,11 @@ class ArticleWidget extends StatelessWidget {
             // Datetime
             Row(
               children: [
-                const Icon(Icons.timeline_outlined, size: 16),
+                Icon(Icons.timeline_outlined, size: 16, color: subtitleColor),
                 const SizedBox(width: 4),
                 Text(
                   article!.publishedAt!,
-                  style: const TextStyle(
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(fontSize: 12, color: subtitleColor),
                 ),
               ],
             ),

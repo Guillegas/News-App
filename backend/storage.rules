@@ -4,8 +4,9 @@ service firebase.storage {
   match /b/{bucket}/o {
     match /media/articles/{articleId}/{filename} {
       allow read: if true;
-      allow write: if request.resource.size < 5 * 1024 * 1024
+      allow create, update: if request.resource.size < 5 * 1024 * 1024
                    && request.resource.contentType.matches('image/.*');
+      allow delete: if true;
     }
   }
 }

@@ -15,8 +15,12 @@ service cloud.firestore {
         request.resource.data.thumbnailUrl is string &&
         request.resource.data.thumbnailStoragePath is string &&
         (request.resource.data.publishedAt is int || request.resource.data.publishedAt is timestamp);
-      allow update: if false;
-      allow delete: if false;
+      allow update: if
+        request.resource.data.title is string &&
+        request.resource.data.title.size() > 0 &&
+        request.resource.data.content is string &&
+        request.resource.data.content.size() > 0;
+      allow delete: if true;
     }
     match /{document=**} {
       allow read, write: if false;

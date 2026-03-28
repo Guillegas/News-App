@@ -60,6 +60,8 @@ class RemoteArticlesBloc
       urlToImage: e.thumbnailUrl,
       publishedAt: e.publishedAt.toIso8601String(),
       content: e.content,
+      firestoreId: e.id,
+      thumbnailStoragePath: e.thumbnailStoragePath,
     );
   }
 }
