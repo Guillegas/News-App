@@ -34,7 +34,6 @@ class ArticlePublisherDataSourceImpl implements ArticlePublisherDataSource {
     await docRef.set({
       'id': articleId,
       'title': params.title,
-      'subtitle': params.subtitle,
       'content': params.content,
       'author': params.author,
       'thumbnailUrl': thumbnailUrl,

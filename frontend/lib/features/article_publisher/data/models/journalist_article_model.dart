@@ -4,7 +4,6 @@ class JournalistArticleModel extends JournalistArticleEntity {
   const JournalistArticleModel({
     required String id,
     required String title,
-    required String subtitle,
     required String content,
     required String author,
     required String thumbnailUrl,
@@ -13,7 +12,6 @@ class JournalistArticleModel extends JournalistArticleEntity {
   }) : super(
           id: id,
           title: title,
-          subtitle: subtitle,
           content: content,
           author: author,
           thumbnailUrl: thumbnailUrl,
@@ -22,14 +20,10 @@ class JournalistArticleModel extends JournalistArticleEntity {
         );
 
   // Violation 1.3.3: fromRawData factory.
-  // The data source is responsible for converting Firebase-specific types
-  // (e.g. Timestamp) to Dart primitives before calling this factory,
-  // so this class stays free of Firebase imports (violation 1.2.4).
   factory JournalistArticleModel.fromRawData(Map<String, dynamic> map) {
     return JournalistArticleModel(
       id: map['id'] as String,
       title: map['title'] as String,
-      subtitle: map['subtitle'] as String,
       content: map['content'] as String,
       author: map['author'] as String,
       thumbnailUrl: map['thumbnailUrl'] as String,
@@ -44,7 +38,6 @@ class JournalistArticleModel extends JournalistArticleEntity {
     return JournalistArticleEntity(
       id: id,
       title: title,
-      subtitle: subtitle,
       content: content,
       author: author,
       thumbnailUrl: thumbnailUrl,

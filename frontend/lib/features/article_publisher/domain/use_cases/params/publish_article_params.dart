@@ -4,7 +4,6 @@ import 'package:equatable/equatable.dart';
 
 class PublishArticleParams extends Equatable {
   final String title;
-  final String subtitle;
   final String content;
   final String author;
   final Uint8List thumbnailBytes;
@@ -12,7 +11,6 @@ class PublishArticleParams extends Equatable {
 
   const PublishArticleParams({
     required this.title,
-    required this.subtitle,
     required this.content,
     required this.author,
     required this.thumbnailBytes,
@@ -21,5 +19,5 @@ class PublishArticleParams extends Equatable {
 
   @override
   List<Object> get props =>
-      [title, subtitle, content, author, thumbnailBytes, thumbnailFileName];
+      [title, content, author, thumbnailBytes, thumbnailFileName];
 }

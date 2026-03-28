@@ -5,19 +5,18 @@ service cloud.firestore {
     match /articles/{articleId} {
       allow read: if true;
       allow create: if
-        request.resource.data.keys().hasAll(['id', 'title', 'subtitle', 'content', 'author', 'thumbnailUrl', 'thumbnailStoragePath', 'publishedAt']) &&
+        request.resource.data.keys().hasAll(['id', 'title', 'content', 'author', 'thumbnailUrl', 'thumbnailStoragePath', 'publishedAt']) &&
         request.resource.data.id is string &&
         request.resource.data.title is string &&
         request.resource.data.title.size() > 0 &&
-        request.resource.data.subtitle is string &&
         request.resource.data.content is string &&
         request.resource.data.content.size() > 0 &&
         request.resource.data.author is string &&
         request.resource.data.thumbnailUrl is string &&
         request.resource.data.thumbnailStoragePath is string &&
         (request.resource.data.publishedAt is int || request.resource.data.publishedAt is timestamp);
-      allow update: if false; // No updates required for now
-      allow delete: if false; // No deletes required for now
+      allow update: if false;
+      allow delete: if false;
     }
     match /{document=**} {
       allow read, write: if false;

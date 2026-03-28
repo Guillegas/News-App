@@ -300,7 +300,6 @@ class _CreateArticleScreenState extends State<CreateArticleScreen> {
           PublishArticleEvent(
             PublishArticleParams(
               title: title,
-              subtitle: '',
               content: content,
               author: 'Journalist',
               thumbnailBytes: _thumbnailBytes!,

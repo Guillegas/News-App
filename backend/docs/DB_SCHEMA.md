@@ -11,7 +11,6 @@ This collection stores all the articles written and published by journalists.
 **Fields:**
 - `id` (String): The unique identifier of the article.
 - `title` (String): The title of the article.
-- `subtitle` (String): A brief summary or subtitle.
 - `content` (String): The main body text of the article.
 - `author` (String): The name of the journalist who wrote the article.
 - `thumbnailUrl` (String): A URL reference to the image in Firebase Cloud Storage.
