@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
@@ -16,12 +17,25 @@ import 'package:news_app_clean_architecture/features/daily_news/data/repository/
 import 'package:news_app_clean_architecture/features/daily_news/domain/repository/article_repository.dart';
 import 'package:news_app_clean_architecture/features/daily_news/domain/usecases/get_article.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
+import 'features/auth/data/data_sources/firebase_auth_data_source.dart';
+import 'features/auth/data/repository/auth_repository_impl.dart';
+import 'features/auth/domain/repository/auth_repository.dart';
+import 'features/auth/domain/use_cases/sign_in_usecase.dart';
+import 'features/auth/domain/use_cases/sign_out_usecase.dart';
+import 'features/auth/domain/use_cases/sign_up_usecase.dart';
+import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/daily_news/data/data_sources/local/app_database.dart';
 import 'features/daily_news/domain/usecases/get_saved_article.dart';
 import 'features/daily_news/domain/usecases/remove_article.dart';
 import 'features/daily_news/domain/usecases/save_article.dart';
 import 'features/daily_news/presentation/bloc/article/local/local_article_bloc.dart';
 
+import 'config/api_keys.dart';
+import 'features/ai/data/ai_service.dart';
+import 'features/ai/domain/repository/ai_repository.dart';
+import 'features/ai/domain/use_cases/summarize_article_usecase.dart';
+import 'features/ai/domain/use_cases/suggest_headline_usecase.dart';
+import 'features/ai/domain/use_cases/analyze_sentiment_usecase.dart';
 import 'package:flutter/foundation.dart';
 import 'package:news_app_clean_architecture/features/daily_news/data/data_sources/local/DAO/article_dao.dart';
 import 'package:news_app_clean_architecture/features/daily_news/data/models/article.dart';
@@ -68,8 +82,30 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<Dio>(dio);
 
   // --- Firebase ---
+  sl.registerSingleton<FirebaseAuth>(FirebaseAuth.instance);
   sl.registerSingleton<FirebaseFirestore>(FirebaseFirestore.instance);
   sl.registerSingleton<FirebaseStorage>(FirebaseStorage.instance);
+
+  // --- Auth ---
+  sl.registerSingleton<FirebaseAuthDataSource>(
+    FirebaseAuthDataSource(sl()),
+  );
+  sl.registerSingleton<AuthRepository>(
+    AuthRepositoryImpl(sl()),
+  );
+  sl.registerSingleton<SignInUseCase>(SignInUseCase(sl()));
+  sl.registerSingleton<SignUpUseCase>(SignUpUseCase(sl()));
+  sl.registerSingleton<SignOutUseCase>(SignOutUseCase(sl()));
+  sl.registerFactory<AuthBloc>(
+    () => AuthBloc(sl(), sl(), sl(), sl()),
+  );
+
+  // --- AI Service ---
+  // The key lives in lib/config/api_keys.dart which is gitignored.
+  sl.registerSingleton<AiRepository>(AiService(apiKey: openAiApiKey));
+  sl.registerSingleton<SummarizeArticleUseCase>(SummarizeArticleUseCase(sl()));
+  sl.registerSingleton<SuggestHeadlineUseCase>(SuggestHeadlineUseCase(sl()));
+  sl.registerSingleton<AnalyzeSentimentUseCase>(AnalyzeSentimentUseCase(sl()));
 
   // --- Data Sources ---
   sl.registerSingleton<NewsApiService>(NewsApiService(sl()));

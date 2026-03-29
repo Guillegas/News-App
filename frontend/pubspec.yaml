@@ -39,6 +39,9 @@ dependencies:
   firebase_core: ^4.6.0
   cloud_firestore: ^6.2.0
   firebase_storage: ^13.2.0
+  firebase_auth: ^6.3.0
+  google_sign_in: ^6.2.1
+  # OpenAI is called via REST (Dio) — no extra package needed
 
 
   #Hooks

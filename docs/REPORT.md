@@ -22,6 +22,8 @@ The goal was clear: build a cross-platform news application where journalists ca
 - **Floor (sqflite)** — Local SQLite ORM for offline article bookmarking
 - **GetIt** — Service locator pattern for dependency injection, wiring all layers together
 - **image_picker** — Cross-platform image selection using `Uint8List` bytes for web compatibility
+- **Firebase Auth + Google Sign-In** — Full authentication system with email/password and Google OAuth, protecting the app behind a login screen
+- **OpenAI API (GPT-4o-mini)** — AI-powered article analysis via REST (Dio), following Clean Architecture with abstract repository, use cases, and presentation layer
 
 ### Resources Used
 
@@ -120,12 +122,12 @@ This project strengthened my ability to:
 
 ### Future Improvements
 
-- **User Authentication** — Firebase Auth for journalist identity, so articles are tied to real users
 - **Pagination** — Infinite scroll loading for the article feed using Firestore cursors
 - **Offline-first** — Firestore local persistence for reading articles without internet
 - **Unit & Widget Tests** — BLoC tests for every event/state transition, widget tests for UI components
 - **Article Categories** — Filter by topic (technology, sports, politics) using NewsAPI parameters
 - **Push Notifications** — Alert users when new articles are published via Firebase Cloud Messaging
+- **Role-based access** — Admin vs journalist roles via Firestore custom claims
 
 ## 5. Proof of the Project
 
@@ -154,24 +156,28 @@ This project strengthened my ability to:
 
 ### Key Flows to Test
 
-1. **Home screen** loads articles from NewsAPI + Firebase Firestore
-2. **Search bar** filters articles in real-time by title, description, or author
-3. **Pull to refresh** reloads the entire feed
-4. **Tap (+) FAB** → Create Article form with validation
-5. **Publish** uploads thumbnail to Storage, saves document to Firestore
-6. **Published articles** appear at the top of the home feed
-7. **Tap an article** → Detail view with full content
-8. **Own articles** show edit/delete options in the detail view's menu (⋮)
-9. **Share button** shares article text natively (Android) or via dialog (web)
-10. **Bookmark FAB** saves articles locally
-11. **Dark mode toggle** (sun/moon icon in the app bar) switches between light and dark themes
-12. **Bookmark icon** in the app bar opens saved articles, where articles can be removed
+1. **Login screen** — Register a new account with email/password, or use Google Sign-In
+2. **Welcome feedback** — Green snackbar with "Welcome, [name]!" on successful login
+3. **Home screen** loads articles from NewsAPI + Firebase Firestore
+4. **Search bar** filters articles in real-time by title, description, or author
+5. **Pull to refresh** reloads the entire feed
+6. **Tap (+) FAB** → Create Article form with validation (author auto-filled from account)
+7. **Publish** uploads thumbnail to Storage, saves document to Firestore
+8. **Published articles** appear at the top of the home feed
+9. **Tap an article** → Detail view with full content
+10. **AI Assistant (✨ icon)** → Bottom sheet with Summarize, Suggest Headline, and Analyze Sentiment
+11. **Own articles** show edit/delete options in the detail view's menu (⋮)
+12. **Share button** shares article text natively (Android) or via dialog (web)
+13. **Bookmark FAB** saves articles locally
+14. **Dark mode toggle** (sun/moon icon in the app bar) switches between light and dark themes
+15. **Bookmark icon** in the app bar opens saved articles, where articles can be removed
+16. **Logout** — Logout icon in the app bar with confirmation dialog
 
 ## 6. Overdelivery
 
 ### 6.1 New Features Implemented
 
-Beyond the base requirements (browse NewsAPI + publish articles), I implemented **5 additional features**:
+Beyond the base requirements (browse NewsAPI + publish articles), I implemented **8 additional features**:
 
 #### 🔍 Real-Time Search
 - **What:** A search bar at the top of the home screen that filters all articles (both NewsAPI and published) in real-time as you type.
@@ -214,6 +220,33 @@ Beyond the base requirements (browse NewsAPI + publish articles), I implemented 
   - `lib/config/theme/theme_cubit.dart`
   - `lib/config/theme/app_themes.dart`
 
+#### 🔐 Firebase Authentication (Email/Password + Google Sign-In)
+- **What:** Full authentication system that protects the app behind a login/register screen. Supports email/password registration and Google OAuth sign-in.
+- **How:** Complete Clean Architecture implementation:
+  - **Domain:** `UserEntity`, `AuthRepository` (abstract), `SignInUseCase`, `SignUpUseCase`, `SignOutUseCase`
+  - **Data:** `FirebaseAuthDataSource` (wraps `FirebaseAuth` + `GoogleSignIn`), `AuthRepositoryImpl` with friendly error messages
+  - **Presentation:** `AuthBloc` (listens to Firebase auth state changes in real-time), `LoginPage` with toggle between Sign In / Sign Up, Google button, and password visibility toggle
+  - `main.dart` shows a splash screen → login (if unauthenticated) or home (if authenticated)
+  - Published articles now use the authenticated user's name/email as author (no more hardcoded "Journalist")
+  - Logout button with confirmation dialog in the home screen
+- **Why:** Authentication is essential for a multi-user publishing platform. It enables article ownership, protects the app, and personalizes the experience.
+- **Location:**
+  - `lib/features/auth/` (full Clean Architecture: domain → data → presentation)
+  - `lib/main.dart` (auth-based routing)
+
+#### 🤖 AI-Powered Article Analysis (OpenAI GPT-4o-mini)
+- **What:** An AI assistant accessible from the article detail screen that offers three features: article summarization, headline improvement suggestions, and sentiment analysis.
+- **How:** Complete Clean Architecture implementation:
+  - **Domain:** `AiRepository` (abstract), `SummarizeArticleUseCase`, `SuggestHeadlineUseCase`, `AnalyzeSentimentUseCase`
+  - **Data:** `AiService` implements `AiRepository`, calls OpenAI's Chat API via REST (Dio) with `gpt-4o-mini` model
+  - **Presentation:** `AiBottomSheet` — a draggable bottom sheet with three action buttons, loading states, result display, and error handling
+  - API key is stored in a gitignored file (`lib/config/api_keys.dart`) for security
+  - The AI icon (✨) appears in purple in the article detail AppBar
+- **Why:** Integrating AI adds real value for journalists — they can quickly summarize long articles, get headline suggestions, and understand article tone. It demonstrates integration with external AI APIs while maintaining architectural integrity.
+- **Location:**
+  - `lib/features/ai/` (full Clean Architecture: domain → data → presentation)
+  - `lib/config/api_keys.dart` (gitignored)
+
 ### 6.2 Prototypes Created
 
 #### Architecture Extension for CRUD
@@ -248,9 +281,7 @@ This pattern is extensible — additional sources (RSS feeds, other APIs) can be
 
 ### 6.3 How Can You Improve This
 
-1. **User Authentication** — Firebase Auth would allow multiple journalists, each managing their own articles. The `author` field would come from the authenticated user's profile instead of being hardcoded.
-
-2. **Real-Time Feed Updates** — Replace the one-time Firestore `get()` with a `snapshots()` stream so published articles appear instantly for all users without manual refresh.
+1. **Real-Time Feed Updates** — Replace the one-time Firestore `get()` with a `snapshots()` stream so published articles appear instantly for all users without manual refresh.
 
 3. **Image Compression & Multiple Images** — Add client-side image compression before upload, and support multiple images per article with a gallery view.
 
@@ -278,15 +309,15 @@ All application logic is written **entirely in Dart/Flutter**, as required by th
 The `injection_container.dart` file serves as the single source of truth for wiring all dependencies:
 
 ```
-Firebase instances (Firestore, Storage)
+Firebase instances (FirebaseAuth, Firestore, Storage)
     ↓
-Data Sources (NewsApiService, ArticlePublisherDataSourceImpl)
+Data Sources (FirebaseAuthDataSource, NewsApiService, ArticlePublisherDataSourceImpl, AiService)
     ↓
-Repositories (ArticleRepositoryImpl, ArticlePublisherRepositoryImpl)
+Repositories (AuthRepositoryImpl, ArticleRepositoryImpl, ArticlePublisherRepositoryImpl)
     ↓
-Use Cases (GetArticle, PublishArticle, DeleteArticle, UpdateArticle, ...)
+Use Cases (SignIn, SignUp, SignOut, GetArticle, PublishArticle, DeleteArticle, UpdateArticle, SummarizeArticle, ...)
     ↓
-BLoCs (RemoteArticlesBloc, LocalArticleBloc, ArticlePublisherBloc)
+BLoCs (AuthBloc, RemoteArticlesBloc, LocalArticleBloc, ArticlePublisherBloc)
 ```
 
 Each layer only depends on the layer above it. BLoCs depend on Use Cases, Use Cases depend on Repository interfaces (not implementations), and only the DI container knows the concrete implementations — achieving full inversion of control.
@@ -294,5 +325,13 @@ Each layer only depends on the layer above it. BLoCs depend on Use Cases, Use Ca
 ### Firebase Security Rules
 
 The deployed Firestore and Storage rules enforce:
-- **Firestore:** Read/write access for all authenticated operations, field-level validation ensuring `title`, `content`, `author`, `thumbnailUrl`, and `publishedAt` are present
-- **Storage:** Maximum 5MB file size, image-only content types, organized under `media/articles/{articleId}/`
+- **Firestore:** Read access is open; create validates all required fields (`id`, `title`, `content`, `author`, `thumbnailUrl`, `thumbnailStoragePath`, `publishedAt`) with type checking; update validates `title` and `content`; delete is permitted
+- **Storage:** Maximum 5MB file size, image-only content types (`image/*`), organized under `media/articles/{articleId}/`
+
+### Authentication Architecture
+
+Firebase Auth is integrated with Google Sign-In and email/password, following the same Clean Architecture pattern as every other feature:
+- The `AuthBloc` listens to `authStateChanges` stream for real-time session management
+- `main.dart` uses `BlocBuilder<AuthBloc, AuthState>` to route between login and home
+- Published articles automatically use the authenticated user's display name or email as author
+- API keys (OpenAI) are stored in a gitignored file to prevent credential leaks

@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_app_clean_architecture/config/routes/routes.dart';
 import 'package:news_app_clean_architecture/config/theme/theme_cubit.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_event.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_state.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/pages/login_page.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/remote/remote_article_event.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/pages/home/daily_news.dart';
 import 'config/theme/app_themes.dart';
@@ -25,8 +29,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider<AuthBloc>(
+          create: (_) => sl<AuthBloc>()..add(const AuthCheckRequested()),
+        ),
         BlocProvider<RemoteArticlesBloc>(
-          create: (context) => sl()..add(const GetArticles()),
+          create: (_) => sl()..add(const GetArticles()),
         ),
         BlocProvider<ThemeCubit>(
           create: (_) => ThemeCubit(),
@@ -40,7 +47,30 @@ class MyApp extends StatelessWidget {
             darkTheme: darkTheme(),
             themeMode: themeMode,
             onGenerateRoute: AppRoutes.onGenerateRoutes,
-            home: const DailyNews(),
+            home: BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                if (state is AuthAuthenticated) {
+                  return const DailyNews();
+                }
+                if (state is AuthUnauthenticated || state is AuthError) {
+                  return const LoginPage();
+                }
+                // AuthInitial / AuthLoading — show splash
+                return Scaffold(
+                  body: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.newspaper_rounded,
+                            size: 64, color: kSymmetryPurple),
+                        const SizedBox(height: 16),
+                        CircularProgressIndicator(color: kSymmetryPurple),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           );
         },
       ),

@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:news_app_clean_architecture/config/theme/app_themes.dart';
+import 'package:news_app_clean_architecture/features/ai/presentation/ai_bottom_sheet.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/domain/use_cases/params/delete_article_params.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/presentation/bloc/article_publisher_bloc.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/presentation/bloc/article_publisher_event.dart';
@@ -99,6 +101,13 @@ class ArticleDetailsView extends HookWidget {
               ],
             ),
           ),
+        // AI assistant button
+        Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.auto_awesome, color: kSymmetryPurple),
+            onPressed: () => _onAiPressed(context),
+          ),
+        ),
         // Share button for all articles
         Builder(
           builder: (context) => IconButton(
@@ -218,6 +227,14 @@ class ArticleDetailsView extends HookWidget {
         backgroundColor: Colors.green,
         content: Text('Article saved successfully.'),
       ),
+    );
+  }
+
+  void _onAiPressed(BuildContext context) {
+    AiBottomSheet.show(
+      context,
+      title: article!.title ?? '',
+      content: '${article!.description ?? ''}\n\n${article!.content ?? ''}',
     );
   }
 

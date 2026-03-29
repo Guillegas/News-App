@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_app_clean_architecture/config/theme/app_themes.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/domain/use_cases/params/publish_article_params.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/presentation/bloc/article_publisher_bloc.dart';
 import 'package:news_app_clean_architecture/features/article_publisher/presentation/bloc/article_publisher_event.dart';
@@ -313,12 +315,22 @@ class _CreateArticleScreenState extends State<CreateArticleScreen> {
             PublishArticleParams(
               title: title,
               content: content,
-              author: 'Journalist',
+              author: _getAuthorName(context),
               thumbnailBytes: _thumbnailBytes!,
               thumbnailFileName: _thumbnailFileName!,
             ),
           ),
         );
+  }
+
+  String _getAuthorName(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      return authState.user.displayName?.isNotEmpty == true
+          ? authState.user.displayName!
+          : authState.user.email;
+    }
+    return 'Journalist';
   }
 
   void _showValidationError(String message) {
