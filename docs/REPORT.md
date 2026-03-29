@@ -1,5 +1,7 @@
 # Symmetry News App — Informe del Proyecto
 
+> 📎 **Capturas de pantalla y video explicativo:** [Google Drive](https://drive.google.com/drive/folders/1RUH9Y1DCyITQG4JHFqew-GBecvyHOGVp?usp=drive_link)
+
 ## 1. Introducción
 
 Este proyecto consiste en una aplicación de noticias multiplataforma desarrollada con Flutter, Clean Architecture y BLoC. Nunca había trabajado con Dart ni Flutter antes de esta prueba. Mi contexto es el de un desarrollador junior que partió de cero con estas tecnologías y tuvo que aprender la arquitectura, el lenguaje y el ecosistema en paralelo al desarrollo.
